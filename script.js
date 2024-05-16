@@ -64,6 +64,8 @@ class ShoppingCart{
             // Si el producto ya existe, actualizar cantidad y subtotal
             this.productList[targetProductIndex].quantity += quantity;
             this.productList[targetProductIndex].subTotal = this.productList[targetProductIndex].price * this.productList[targetProductIndex].quantity;
+            this.total = this.calculateTotal();
+            localStorage.setItem("cart", JSON.stringify(this));
         } else {
             // Si el producto no existe, agregarlo a la lista
             const targetProduct = createdProducts.find(product => product.name.toLowerCase() === productName.toLowerCase());
@@ -71,13 +73,12 @@ class ShoppingCart{
             if (targetProduct) {
                 const newProduct = { ...targetProduct, quantity, subTotal: targetProduct.price * quantity };
                 this.productList.push(newProduct);
+                this.total = this.calculateTotal();
+                localStorage.setItem("cart", JSON.stringify(this));
             } else {
                 alert("No se encontró el producto");
             }
         }
-
-        this.total = this.calculateTotal();
-        console.log(this.productList);
     }
     //Eliminar producto y actualizar precio
     removeProduct(productName) {
@@ -118,19 +119,29 @@ class ShoppingCart{
     }
 };
 function shoppingSimulator() {
-    //Asignación de productos
-    new Products("Rosa (Rosa spp.)", 500, "Belleza eterna: Las rosas añaden un toque de elegancia a cualquier jardín. Requieren pleno sol y suelo bien drenado. Perfectas para arreglos florales y regalos especiales."),
-    new Products("Lavanda (Lavandula spp.)", 350, "Aroma relajante: La lavanda es conocida por su fragancia calmante y atrae a polinizadores. Prefiere pleno sol y suelos secos. Ideal para bordes de jardín y aromaterapia."),
-    new Products("Tomate (Solanum lycopersicum)", 240, "Frescura del huerto: Los tomates son fáciles de cultivar y deliciosos. Necesitan pleno sol y riego regular. Disfruta de tomates frescos en tus ensaladas y platos favoritos."),
-    new Products("Helecho (Filicophyta spp.)", 375, "Elegancia natural: Los helechos son plantas de interior que añaden un toque de verdor a cualquier espacio. Prefieren sombra parcial y humedad constante. Perfectos para baños y áreas sombrías."),
-    new Products("Suculenta (Suculenta spp.)", 130, "Belleza resistente: Las suculentas son fáciles de cuidar y vienen en una variedad de formas y colores. Prefieren pleno sol y suelos bien drenados. Ideales para decorar interiores y regalos duraderos."),
-    new Products("Bambú (Bambusoideae spp.)", 625, "Elegancia vertical: El bambú agrega altura y estructura al jardín. Necesita pleno sol o sombra parcial y suelos húmedos. Crea setos o pantallas de privacidad con esta planta versátil.")
+    if (localStorage.getItem("products") === null) {
+        //Asignación de productos
+        new Products("Rosa (Rosa spp.)", 500, "Belleza eterna: Las rosas añaden un toque de elegancia a cualquier jardín. Requieren pleno sol y suelo bien drenado. Perfectas para arreglos florales y regalos especiales."),
+        new Products("Lavanda (Lavandula spp.)", 350, "Aroma relajante: La lavanda es conocida por su fragancia calmante y atrae a polinizadores. Prefiere pleno sol y suelos secos. Ideal para bordes de jardín y aromaterapia."),
+        new Products("Tomate (Solanum lycopersicum)", 240, "Frescura del huerto: Los tomates son fáciles de cultivar y deliciosos. Necesitan pleno sol y riego regular. Disfruta de tomates frescos en tus ensaladas y platos favoritos."),
+        new Products("Helecho (Filicophyta spp.)", 375, "Elegancia natural: Los helechos son plantas de interior que añaden un toque de verdor a cualquier espacio. Prefieren sombra parcial y humedad constante. Perfectos para baños y áreas sombrías."),
+        new Products("Suculenta (Suculenta spp.)", 130, "Belleza resistente: Las suculentas son fáciles de cuidar y vienen en una variedad de formas y colores. Prefieren pleno sol y suelos bien drenados. Ideales para decorar interiores y regalos duraderos."),
+        new Products("Bambú (Bambusoideae spp.)", 625, "Elegancia vertical: El bambú agrega altura y estructura al jardín. Necesita pleno sol o sombra parcial y suelos húmedos. Crea setos o pantallas de privacidad con esta planta versátil.")
+        //Guardar en localStorage
+        localStorage.setItem("products", JSON.stringify(createdProducts));
+    } else {
+        //Cargar productos de localStorage
+        createdProducts = JSON.parse(localStorage.getItem("products"));
+    }
 
     //Inicialización de carrito
-    const shoppingCart = new ShoppingCart();
+    let shoppingCart = new ShoppingCart();
+    if (localStorage.getItem("cart")) {
+        shoppingCart.productList = JSON.parse(localStorage.getItem("cart")).productList;
+        shoppingCart.total = JSON.parse(localStorage.getItem("cart")).total;
+    }
 
     const showProducts = (cart) => {
-        console.log(cart);
         //Mostrar lista de productos
         //Mostrar solo si la lista de productos tiene elementos
         if (createdProducts.length > 0) {
@@ -144,7 +155,7 @@ function shoppingSimulator() {
                 cardBody.innerHTML = `
                     <h5 class="card-title">${product.name}</h5>
                     <p class="card-text">${product.description}</p>
-                    <p class="card-text">$${product.price}</p>
+                    <p class="card-price">$${product.price}</p>
                 `;
                 //Crear contenedor de botones
                 const cardButtons = document.createElement('div');
@@ -160,8 +171,10 @@ function shoppingSimulator() {
                 const addButton = document.createElement('button');
                 addButton.textContent = 'Agregar';
                 addButton.classList.add('btn', 'btn-primary');
+                //Evento: agregar al carrito
                 addButton.onclick = () => {
                     const quantity = parseInt(document.getElementById(`quantity-input-${product.id}`).value, 10);
+                    quantityInput.value = 1;
                     cart.addProduct(product.name, quantity);
                 };
                 //Anexar elementos
@@ -171,14 +184,55 @@ function shoppingSimulator() {
                 card.appendChild(cardBody);
                 card.appendChild(cardButtons);
 
-                document.getElementById("content").appendChild(card);
+                document.getElementById("products-container").appendChild(card);
             })
         } else {
-            document.getElementById("content").innerHTML = `<h4 class="content-title">No hay productos disponibles por el momento</h4>`;
+            document.getElementById("products-container").innerHTML = `<h4 class="content-title">No hay productos disponibles por el momento</h4>`;
         }
     };
 
+    const showShoppingCart = () => {
+        //Mostrar carrito de compras
+        //Mostrar solo si hay elementos en el carrito
+        const container = document.getElementById("shopping-cart-container");
+        let cart = JSON.parse(localStorage.getItem('cart'))
+
+        if (!cart) {
+            //Mostrar mensaje de carrito vacío
+            const emptyCart = document.createElement('p');
+            emptyCart.classList.add('empty-cart');
+            emptyCart.textContent = 'El carrito de compras se encuentra vacío';
+            container.appendChild(emptyCart);
+        } else {
+            //Mostrar lista de productos
+            const cartTable = document.createElement('table');
+            cartTable.classList.add('product-table');
+
+            //Crear encabezado de la tabla
+            const tableHeader = document.createElement('tr');
+            tableHeader.innerHTML = '<th>Producto</th><th>Cantidad</th><th>Subtotal</th>';
+            cartTable.appendChild(tableHeader);
+            //Crear filas de la tabla
+            cart.productList.forEach(item => {
+                const tableRow = document.createElement('tr');
+                tableRow.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>$${item.subTotal.toFixed(2)}</td>
+                `;
+                cartTable.appendChild(tableRow);
+            });
+            container.appendChild(cartTable);
+
+            //Mostrar total
+            const totalContainer = document.createElement('div');
+            totalContainer.classList.add('total-container');
+            totalContainer.innerHTML = `<p>Total: $${cart.total.toFixed(2)}</p>`;
+            container.appendChild(totalContainer);
+        }
+    }
     showProducts(shoppingCart);
+    showShoppingCart();
 };
 //Iniciar simulador de compra
 shoppingSimulator();
