@@ -31,13 +31,82 @@
     width: 10%;
 }
 
+.table-quantity-input {
+    width: 20%;
+}
+
 .card-title {
     font-size: large;
     text-align: center;
 }
 
+.edit-button {
+    width: 50px;
+}
 .card-price {
     text-align: center;
     font-weight: bold;
     color: green;
+}
+
+#shopping-cart-container {
+    width: 85%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+}
+
+.product-table {
+    width: 80%;
+}
+
+.product-table>tr>th {
+    text-align: left;
+}
+
+
+.product-table>tr>td:nth-child(2) {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.product-table>tr>td:nth-child(2),
+.product-table>tr>th:nth-child(2) {
+    width: fit-content;
+}
+
+.product-table>tr>td:nth-child(4) {
+    display: flex;
+    justify-content: center;
+}
+
+
+.subtotal-cell {
+    text-align: right;
+}
+
+#total {
+    font-weight: bold;
+    font-size: larger;
+    color: green;
+}
+
+.finish-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#finish-total {
+    color: green;
+}
+
+.list-button-container {
+    display: flex;
 }

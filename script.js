@@ -226,7 +226,7 @@ function shoppingSimulator() {
                 tableRow.innerHTML = `
                     <td>${product.name}</td>
                     <td>
-                        <input type="number" id="quantity-input-${product.id}" value="${product.quantity}" min="1" disabled>
+                        <input type="number" class="table-quantity-input" id="quantity-input-${product.id}" value="${product.quantity}" min="1" disabled>
                         <button class="edit-button" id="edit-button-${product.id}">Editar</button>
                     </td>
                     <td class="subtotal-cell">$${product.subTotal.toFixed(2)}</td>
@@ -303,11 +303,34 @@ function shoppingSimulator() {
                 emptyCart.textContent = 'El carrito de compras se encuentra vacío';
                 container.removeChild(document.querySelector('.product-table'));
                 container.removeChild(document.querySelector('.total-container'));
-                container.removeChild(document.querySelector('.clear-button'));
+                container.removeChild(document.querySelector('.list-button-container'));
                 container.appendChild(emptyCart);
             }
-            container.appendChild(clearButton);
 
+            //Agregar botón para finalizar compra
+            const finishButton = document.createElement('button');
+            finishButton.textContent = 'Realizar compra';
+            finishButton.classList.add('finish-button');
+            finishButton.addEventListener('click', function() {
+                const container = document.querySelector('#container');
+                container.innerHTML = `
+                <div class="finish-container">
+                    <h1>Tu compra ha sido finalizada con éxito</h1>
+                    <h2>El precio total de tu compra fue de <strong id="finish-total">$${cart.total.toFixed(2)}</strong></h2>
+                    <p>Revisa tu correo para obtener el resumen de la misma</p>
+                    <p>Gracias por elegirnos</p>
+                </div>`
+                //Limpiar localstorage
+                localStorage.removeItem("cart");
+            })
+
+            const listButtonContainer = document.createElement('div');
+            listButtonContainer.classList.add('list-button-container');
+
+            listButtonContainer.appendChild(clearButton);
+            listButtonContainer.appendChild(finishButton);
+
+            container.appendChild(listButtonContainer);
         }
     }
     showProducts(shoppingCart);
