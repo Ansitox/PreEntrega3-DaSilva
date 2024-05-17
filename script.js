@@ -1,9 +1,11 @@
 //Lista de productos
 let createdProducts = [];
+
 //Clase: Productos
 class Products {
 //Array para IDs generadas
     static createdIds = [];
+
 //Constructor de productos
     constructor (name, price, description) {
         this.id = this.generateUniqueId()
@@ -13,6 +15,7 @@ class Products {
 
         this.addToCreatedProducts()
     }
+
 //Métodos:
     //Generar ID unico
     generateUniqueId() {
@@ -27,14 +30,17 @@ class Products {
         Products.createdIds.push(id);
         return id;
     }
+
     //Agregar a la lista de productos
     addToCreatedProducts() {
         createdProducts.push(this)
     }
+
     //Editar nombre
     editName(newName) {
         this.name = newName
     }
+
     //Editar precio
     editPrice(newPrice) {
         this.price = newPrice.toFixed(2)
@@ -53,10 +59,12 @@ class ShoppingCart{
     findProduct(productName) {
         return this.productList.find(product => product.name.toLowerCase() === productName.toLowerCase())
     }
+
     //Calcular total del carrito
     calculateTotal() {
         return this.productList.reduce((total, product) => total + product.subTotal, 0)
     }
+
     //Añadir producto y actualizar precio
     addProduct(productName, quantity) {
         const targetProductIndex = this.productList.findIndex(product => product.name.toLowerCase() === productName.toLowerCase());
@@ -84,6 +92,7 @@ class ShoppingCart{
     //Eliminar producto y actualizar precio
     removeProduct(productName) {
         const targetProduct = this.findProduct(productName);
+
         //Verificar que el producto esté en el carrito
         if (targetProduct) {
             const index = this.productList.indexOf(targetProduct);
@@ -98,6 +107,7 @@ class ShoppingCart{
             alert("No se encontró el producto");
         }
     }
+
     //Editar cantidad de producto
     editProductQuantity(productName, newQuantity) {
         const targetProduct = this.findProduct(productName);
@@ -113,10 +123,12 @@ class ShoppingCart{
             alert("No se encontró el producto");
         }
     }
+
     //Limpiar carrito
     cleanCart() {
         //Vaciar lista de productos en carrito
         this.productList = []
+
         //Reiniciar precio total
         this.total = 0
         localStorage.removeItem("cart");
@@ -131,6 +143,7 @@ function shoppingSimulator() {
         new Products("Helecho (Filicophyta spp.)", 375, "Elegancia natural: Los helechos son plantas de interior que añaden un toque de verdor a cualquier espacio. Prefieren sombra parcial y humedad constante. Perfectos para baños y áreas sombrías."),
         new Products("Suculenta (Suculenta spp.)", 130, "Belleza resistente: Las suculentas son fáciles de cuidar y vienen en una variedad de formas y colores. Prefieren pleno sol y suelos bien drenados. Ideales para decorar interiores y regalos duraderos."),
         new Products("Bambú (Bambusoideae spp.)", 625, "Elegancia vertical: El bambú agrega altura y estructura al jardín. Necesita pleno sol o sombra parcial y suelos húmedos. Crea setos o pantallas de privacidad con esta planta versátil.")
+
         //Guardar en localStorage
         localStorage.setItem("products", JSON.stringify(createdProducts));
     } else {
@@ -153,17 +166,19 @@ function shoppingSimulator() {
                 //Crear card
                 const card = document.createElement('div');
                 card.classList.add('card');
+
                 //Crear cuerpo de la card
                 const cardBody = document.createElement('div');
                 cardBody.classList.add('card-body');
                 cardBody.innerHTML = `
                     <h5 class="card-title">${product.name}</h5>
                     <p class="card-text">${product.description}</p>
-                    <p class="card-price">$${product.price}</p>
-                `;
+                    <p class="card-price">$${product.price}</p>`;
+
                 //Crear contenedor de botones
                 const cardButtons = document.createElement('div');
                 cardButtons.classList.add('card-buttons');
+
                 //Crear input de cantidad
                 const quantityInput = document.createElement('input');
                 quantityInput.id = `quantity-input-${product.id}`;
@@ -171,20 +186,24 @@ function shoppingSimulator() {
                 quantityInput.value = 1;
                 quantityInput.min = 1;
                 quantityInput.classList.add('quantity-input');
+
                 //Crear botón de agregar
                 const addButton = document.createElement('button');
                 addButton.textContent = 'Agregar';
                 addButton.classList.add('btn', 'btn-primary');
+
                 //Evento: agregar al carrito
                 addButton.onclick = () => {
                     const quantity = parseInt(document.getElementById(`quantity-input-${product.id}`).value, 10);
                     quantityInput.value = 1;
                     cart.addProduct(product.name, quantity);
+
                     //Limpiar tabla
                     document.getElementById("shopping-cart-container").innerHTML = '<h2>Carrito de compras</h2>';
                     //Actualizar tabla
                     showShoppingCart(cart);
                 };
+
                 //Anexar elementos
                 cardButtons.appendChild(quantityInput);
                 cardButtons.appendChild(addButton);
@@ -220,6 +239,7 @@ function shoppingSimulator() {
             const tableHeader = document.createElement('tr');
             tableHeader.innerHTML = '<th>Producto</th><th>Cantidad</th><th>Subtotal</th><th>Quitar</th>';
             cartTable.appendChild(tableHeader);
+
             //Crear filas de la tabla
             cart.productList.forEach(product => {
                 const tableRow = document.createElement('tr');
@@ -232,9 +252,11 @@ function shoppingSimulator() {
                     <td class="subtotal-cell">$${product.subTotal.toFixed(2)}</td>
                     <td><button class="remove-button-${product.id}">X</button></td>
                 `;
+
                 //Obtener input y boton de editar
                 const quantityInput = tableRow.querySelector(`#quantity-input-${product.id}`);
                 const editButton = tableRow.querySelector('.edit-button');
+
                 //Evento: deshabilitar input de cantidad y mostrar boton de editar
                 editButton.addEventListener('click', function() {
                     if (editButton.textContent === 'Editar') {
@@ -263,6 +285,7 @@ function shoppingSimulator() {
 
                 //Obtener boton de eliminar
                 const removeButton = tableRow.querySelector(`.remove-button-${product.id}`);
+
                 //Evento: remover del carrito
                 removeButton.addEventListener('click', function() {
                     const table = document.querySelectorAll('.product-table>tr');
@@ -276,9 +299,7 @@ function shoppingSimulator() {
                     }
                     total.textContent = `Total: $${shoppingCart.total.toFixed(2)}`
                 })
-
                 cartTable.appendChild(tableRow);
-
             });
             container.appendChild(cartTable);
 
@@ -295,12 +316,15 @@ function shoppingSimulator() {
             clearButton.addEventListener('click', function() {
                 cleanFunction();
             })
+
             const cleanFunction = () => {
                 shoppingCart.cleanCart();
                 //Mostrar mensaje de carrito vacío
                 const emptyCart = document.createElement('p');
                 emptyCart.classList.add('empty-cart');
                 emptyCart.textContent = 'El carrito de compras se encuentra vacío';
+
+                //Limpiar tabla
                 container.removeChild(document.querySelector('.product-table'));
                 container.removeChild(document.querySelector('.total-container'));
                 container.removeChild(document.querySelector('.list-button-container'));
@@ -311,6 +335,8 @@ function shoppingSimulator() {
             const finishButton = document.createElement('button');
             finishButton.textContent = 'Realizar compra';
             finishButton.classList.add('finish-button');
+
+            //Evento: mostrar resumen de la compra
             finishButton.addEventListener('click', function() {
                 const container = document.querySelector('#container');
                 container.innerHTML = `
@@ -324,17 +350,25 @@ function shoppingSimulator() {
                 localStorage.removeItem("cart");
             })
 
+            //Crear contenedor de botones
             const listButtonContainer = document.createElement('div');
             listButtonContainer.classList.add('list-button-container');
 
+            //Añadir botones al contenedor
             listButtonContainer.appendChild(clearButton);
             listButtonContainer.appendChild(finishButton);
 
+            //Añadir contenedor al contenedor principal
             container.appendChild(listButtonContainer);
         }
     }
+
+    //Mostrar productos disponibles
     showProducts(shoppingCart);
+
+    //Mostrar carrito de compras
     showShoppingCart();
 };
+
 //Iniciar simulador de compra
 shoppingSimulator();
