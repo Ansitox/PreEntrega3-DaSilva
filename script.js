@@ -40,6 +40,7 @@ class Products {
         this.price = newPrice.toFixed(2)
     }
 };
+
 //Clase: Carrito de compras
 class ShoppingCart{
     constructor () {
@@ -91,6 +92,7 @@ class ShoppingCart{
                 this.productList.splice(index, 1);
                 //Actualizar precio
                 this.total = this.calculateTotal()
+                localStorage.setItem("cart", JSON.stringify(this));
             }
         } else {
             alert("No se encontró el producto");
@@ -106,6 +108,7 @@ class ShoppingCart{
             targetProduct.subTotal = targetProduct.price * newQuantity;
             //Actualizar precio
             this.total = this.calculateTotal()
+            localStorage.setItem("cart", JSON.stringify(this));
         } else {
             alert("No se encontró el producto");
         }
@@ -116,6 +119,7 @@ class ShoppingCart{
         this.productList = []
         //Reiniciar precio total
         this.total = 0
+        localStorage.removeItem("cart");
     }
 };
 function shoppingSimulator() {
@@ -176,6 +180,10 @@ function shoppingSimulator() {
                     const quantity = parseInt(document.getElementById(`quantity-input-${product.id}`).value, 10);
                     quantityInput.value = 1;
                     cart.addProduct(product.name, quantity);
+                    //Limpiar tabla
+                    document.getElementById("shopping-cart-container").innerHTML = '<h2>Carrito de compras</h2>';
+                    //Actualizar tabla
+                    showShoppingCart(cart);
                 };
                 //Anexar elementos
                 cardButtons.appendChild(quantityInput);
@@ -197,7 +205,7 @@ function shoppingSimulator() {
         const container = document.getElementById("shopping-cart-container");
         let cart = JSON.parse(localStorage.getItem('cart'))
 
-        if (!cart) {
+        if (!cart || cart.productList.length === 0) {
             //Mostrar mensaje de carrito vacío
             const emptyCart = document.createElement('p');
             emptyCart.classList.add('empty-cart');
@@ -210,25 +218,96 @@ function shoppingSimulator() {
 
             //Crear encabezado de la tabla
             const tableHeader = document.createElement('tr');
-            tableHeader.innerHTML = '<th>Producto</th><th>Cantidad</th><th>Subtotal</th>';
+            tableHeader.innerHTML = '<th>Producto</th><th>Cantidad</th><th>Subtotal</th><th>Quitar</th>';
             cartTable.appendChild(tableHeader);
             //Crear filas de la tabla
-            cart.productList.forEach(item => {
+            cart.productList.forEach(product => {
                 const tableRow = document.createElement('tr');
                 tableRow.innerHTML = `
-                    <td>${item.name}</td>
-                    <td>${item.quantity}</td>
-                    <td>$${item.subTotal.toFixed(2)}</td>
+                    <td>${product.name}</td>
+                    <td>
+                        <input type="number" id="quantity-input-${product.id}" value="${product.quantity}" min="1" disabled>
+                        <button class="edit-button" id="edit-button-${product.id}">Editar</button>
+                    </td>
+                    <td class="subtotal-cell">$${product.subTotal.toFixed(2)}</td>
+                    <td><button class="remove-button-${product.id}">X</button></td>
                 `;
+                //Obtener input y boton de editar
+                const quantityInput = tableRow.querySelector(`#quantity-input-${product.id}`);
+                const editButton = tableRow.querySelector('.edit-button');
+                //Evento: deshabilitar input de cantidad y mostrar boton de editar
+                editButton.addEventListener('click', function() {
+                    if (editButton.textContent === 'Editar') {
+                        //Habilitar el input para editar la cantidad
+                        quantityInput.disabled = false;
+                        editButton.textContent = 'Ok';
+                    } else if (editButton.textContent === 'Ok') {
+                        //Capturar el valor del input y llamar a la función para editar la cantidad en el carrito
+                        const newQuantity = parseInt(quantityInput.value);
+                        shoppingCart.editProductQuantity(product.name, newQuantity);
+
+                        //Actualizar el subtotal en la lista
+                        const subTotalCell = tableRow.querySelector('.subtotal-cell');
+                        subTotalCell.textContent = `$${(product.price * newQuantity).toFixed(2)}`
+
+                        //Actualizar el total
+                        cart.total = shoppingCart.calculateTotal();
+                        const totalContainer = document.querySelector('.total-container');
+                        totalContainer.innerHTML = `<p id="total">Total: $${cart.total.toFixed(2)}</p>`
+
+                        //Deshabilitar el input y cambiar el botón de vuelta a "Editar"
+                        quantityInput.disabled = true;
+                        editButton.textContent = 'Editar';
+                    }
+                });
+
+                //Obtener boton de eliminar
+                const removeButton = tableRow.querySelector(`.remove-button-${product.id}`);
+                //Evento: remover del carrito
+                removeButton.addEventListener('click', function() {
+                    const table = document.querySelectorAll('.product-table>tr');
+                    console.log(table);
+                    shoppingCart.removeProduct(product.name);
+                    cartTable.removeChild(tableRow);
+                    const total = document.getElementById("total")
+                    if (table.length === 2) {
+                        cleanFunction();
+                        return
+                    }
+                    total.textContent = `Total: $${shoppingCart.total.toFixed(2)}`
+                })
+
                 cartTable.appendChild(tableRow);
+
             });
             container.appendChild(cartTable);
 
             //Mostrar total
             const totalContainer = document.createElement('div');
             totalContainer.classList.add('total-container');
-            totalContainer.innerHTML = `<p>Total: $${cart.total.toFixed(2)}</p>`;
+            totalContainer.innerHTML = `<p id="total">Total: $${cart.total.toFixed(2)}</p>`;
             container.appendChild(totalContainer);
+
+            //Agregar botón para limpiar carrito
+            const clearButton = document.createElement('button');
+            clearButton.textContent = 'Limpiar carrito';
+            clearButton.classList.add('clear-button');
+            clearButton.addEventListener('click', function() {
+                cleanFunction();
+            })
+            const cleanFunction = () => {
+                shoppingCart.cleanCart();
+                //Mostrar mensaje de carrito vacío
+                const emptyCart = document.createElement('p');
+                emptyCart.classList.add('empty-cart');
+                emptyCart.textContent = 'El carrito de compras se encuentra vacío';
+                container.removeChild(document.querySelector('.product-table'));
+                container.removeChild(document.querySelector('.total-container'));
+                container.removeChild(document.querySelector('.clear-button'));
+                container.appendChild(emptyCart);
+            }
+            container.appendChild(clearButton);
+
         }
     }
     showProducts(shoppingCart);
